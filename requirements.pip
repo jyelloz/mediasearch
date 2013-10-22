@@ -1,4 +1,12 @@
+setuptools
+nose
 Flask
 Flask-Failsafe
 Flask-Script
+Flask-WTF
+Flask-SQLAlchemy
+SQLAlchemy
+Celery
+Whoosh
 requests
+grequests
