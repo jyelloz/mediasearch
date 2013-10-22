@@ -3,10 +3,23 @@
 import logging
 from flask.ext.script import Manager
 from mediasearch.web import create
+from functools import partial
 
 
 if __name__ == '__main__':
+
     logging.basicConfig(level=logging.DEBUG)
     logging.captureWarnings(True)
-    manager = Manager(create)
+
+    class C(object):
+
+        SITE_TITLE = 'Mediasearch'
+        SECRET_KEY = 'secret'
+
+    configured_create = partial(
+        create,
+        config=C(),
+    )
+
+    manager = Manager(configured_create)
     manager.run()
