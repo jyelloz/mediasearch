@@ -18,6 +18,8 @@ class Greenlet(_Greenlet):
 
 class Group(_Group):
 
+    greenlet_class = Greenlet
+
     def __init__(self, *args):
         super(Group, self).__init__(*args)
         self._uuid = str(uuid4())
