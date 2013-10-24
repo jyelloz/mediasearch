@@ -6,7 +6,7 @@ Flask-Script
 Flask-WTF
 Flask-SQLAlchemy
 SQLAlchemy
-Celery
 Whoosh
+gevent
 requests
 grequests
