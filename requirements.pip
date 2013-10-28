@@ -9,4 +9,5 @@ SQLAlchemy
 Whoosh
 gevent
 requests
-grequests
+lxml
+cssselect

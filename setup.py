@@ -30,6 +30,7 @@ setup(
         'Whoosh',
         'gevent',
         'requests',
-        'grequests',
+        'lxml',
+        'cssselect',
     ],
 )
