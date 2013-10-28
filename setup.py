@@ -26,7 +26,7 @@ setup(
         'Flask-Script',
         'Flask-WTF',
         'CodernityDB',
-        'gevent',
+        'gevent>=1.0dev',
         'requests',
         'lxml',
         'cssselect',

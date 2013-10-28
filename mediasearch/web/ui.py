@@ -1,7 +1,7 @@
 from flask import (
     Blueprint,
     render_template, url_for,
-    current_app, session, request, g,
+    current_app, session, g,
 )
 from flask.views import MethodView
 
@@ -37,8 +37,13 @@ def build_blueprint():
     )
 
     mediasearch.add_url_rule(
-        '/search/<query>',
+        '/search',
         view_func=SearchView.as_view('search'),
+    )
+
+    mediasearch.add_url_rule(
+        '/search/<query>',
+        view_func=SearchView.as_view('search_query'),
     )
 
     @mediasearch.before_request
@@ -50,8 +55,8 @@ def build_blueprint():
 
         db.exists() and db.open() or db.create()
 
-    @mediasearch.after_request
-    def teardown_database():
+    @mediasearch.teardown_request
+    def teardown_database(*args, **kwargs):
 
         db = getattr(g, 'db', None)
         if db is not None:
@@ -68,7 +73,12 @@ class IndexView(MethodView):
 
     def get(self):
 
+        from gevent import spawn_later
+
         form = SearchForm()
+
+        current_app.logger.debug('scheduling fake task')
+        spawn_later(5, self.fake_task)
 
         return render_template(
             'index.html',
@@ -76,6 +86,16 @@ class IndexView(MethodView):
             form=form,
             form_url=url_for('.search'),
         )
+
+    def fake_task(self):
+
+        from gevent import sleep
+
+        print 'running fake task'
+
+        sleep(5)
+
+        print 'done'
 
 
 class SearchView(MethodView):
@@ -93,7 +113,7 @@ class SearchView(MethodView):
 
     def post(self):
 
-        form = self.SearchForm()
+        form = SearchForm()
 
         if not form.validate_on_submit():
             return render_template(

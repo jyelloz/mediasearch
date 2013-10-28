@@ -5,9 +5,12 @@ monkey.patch_all()
 
 
 import logging
+
 from functools import partial
 from flask.ext.script import Manager
 from mediasearch.web import create
+from mediasearch.commands import GeventServer
+
 
 if __name__ == '__main__':
 
@@ -16,6 +19,7 @@ if __name__ == '__main__':
 
     class Config(object):
 
+        DEBUG = True
         SITE_TITLE = 'Mediasearch'
         SECRET_KEY = 'secret'
         DATABASE = 'database'
@@ -25,5 +29,8 @@ if __name__ == '__main__':
         config=Config(),
     )
 
+    geventserver = GeventServer()
+
     manager = Manager(configured_create)
+    manager.add_command('rungeventserver', geventserver)
     manager.run()
