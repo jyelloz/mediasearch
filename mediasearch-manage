@@ -1,24 +1,28 @@
 #!/usr/bin/env python
 
+from gevent import monkey
+monkey.patch_all()
+
+
 import logging
+from functools import partial
 from flask.ext.script import Manager
 from mediasearch.web import create
-from functools import partial
-
 
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
     logging.captureWarnings(True)
 
-    class C(object):
+    class Config(object):
 
         SITE_TITLE = 'Mediasearch'
         SECRET_KEY = 'secret'
+        DATABASE = 'database'
 
     configured_create = partial(
         create,
-        config=C(),
+        config=Config(),
     )
 
     manager = Manager(configured_create)
