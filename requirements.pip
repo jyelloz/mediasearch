@@ -4,9 +4,7 @@ Flask
 Flask-Failsafe
 Flask-Script
 Flask-WTF
-Flask-SQLAlchemy
-SQLAlchemy
-Whoosh
+CodernityDB
 gevent
 requests
 lxml
