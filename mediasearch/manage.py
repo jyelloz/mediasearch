@@ -1,18 +1,18 @@
-#!/usr/bin/env python
-
-from gevent import monkey
-monkey.patch_all()
+# -*- coding: utf-8 -*-
 
 
-import logging
+def main():
 
-from functools import partial
-from flask.ext.script import Manager
-from mediasearch.web import create
-from mediasearch.commands import GeventServer
+    from gevent import monkey
+    monkey.patch_all()
 
+    import logging
 
-if __name__ == '__main__':
+    from functools import partial
+    from flask.ext.script import Manager
+
+    from .web import create
+    from .commands import GeventServer
 
     logging.basicConfig(level=logging.DEBUG)
     logging.captureWarnings(True)
@@ -29,8 +29,10 @@ if __name__ == '__main__':
         config=Config(),
     )
 
-    geventserver = GeventServer()
-
     manager = Manager(configured_create)
-    manager.add_command('rungeventserver', geventserver)
+    manager.add_command('rungeventserver', GeventServer())
     manager.run()
+
+
+if __name__ == '__main__':
+    main()

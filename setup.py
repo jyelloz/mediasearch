@@ -18,6 +18,11 @@ setup(
     ],
     test_suite='mediasearch.testsuite',
     include_package_data=True,
+    entry_points=dict(
+        console_scripts=[
+            'mediasearch-manage = mediasearch.manage:main',
+        ],
+    ),
     setup_requires=[
         'nose>=1.0',
         'coverage',
