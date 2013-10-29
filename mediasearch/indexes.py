@@ -14,8 +14,6 @@ class SearchTaskIndex(HashIndex):
 
     def make_key_value(self, data):
 
-        print repr(data)
-
         kind = data.get('kind', None)
         if kind != 'task':
             return
