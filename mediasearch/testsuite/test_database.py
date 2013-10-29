@@ -3,10 +3,7 @@ import logging
 from tempfile import mkdtemp
 from unittest import TestCase as _TestCase
 
-from CodernityDB.database import Database
-
-from mediasearch import indexes as i
-
+from mediasearch import database
 
 log = logging.getLogger(__name__)
 
@@ -18,32 +15,8 @@ class DatabaseTestcase(_TestCase):
         logging.basicConfig(level=logging.DEBUG)
 
         self.directory = directory = mkdtemp()
-        self.db = db = Database(directory)
-
-        db.create()
-
-        map(
-            db.add_index,
-            [
-                i.SearchTaskIndex(
-                    db.path, 'search_task',
-                ),
-                i.SearchResultIndex(
-                    db.path, 'search_result',
-                ),
-                i.SearchTaskStatusIndex(
-                    db.path, 'search_task_new', task_status='new',
-                ),
-                i.SearchTaskStatusIndex(
-                    db.path, 'search_task_working', task_status='working',
-                ),
-                i.SearchTaskStatusIndex(
-                    db.path, 'search_task_done', task_status='done',
-                ),
-            ]
-        )
-
-        log.info('initialized database in %r', directory)
+        database.initialize(directory)
+        self.db = database.connect(directory)
 
     def test_task_status_index(self):
 
