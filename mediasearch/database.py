@@ -24,33 +24,32 @@ def initialize(path):
 
     db.create()
 
+    indexes = [
+        i.SearchTaskIndex(
+            db.path,
+            'search_task',
+        ),
+        i.SearchResultIndex(
+            db.path,
+            'search_result',
+        ),
+        i.SearchTaskStatusNewIndex(
+            db.path,
+            'search_task_new',
+        ),
+        i.SearchTaskStatusWorkingIndex(
+            db.path,
+            'search_task_working',
+        ),
+        i.SearchTaskStatusDoneIndex(
+            db.path,
+            'search_task_done',
+        ),
+    ]
+
     map(
         db.add_index,
-        [
-            i.SearchTaskIndex(
-                db.path,
-                'search_task',
-            ),
-            i.SearchResultIndex(
-                db.path,
-                'search_result',
-            ),
-            i.SearchTaskStatusIndex(
-                db.path,
-                'search_task_new',
-                task_status='new',
-            ),
-            i.SearchTaskStatusIndex(
-                db.path,
-                'search_task_working',
-                task_status='working',
-            ),
-            i.SearchTaskStatusIndex(
-                db.path,
-                'search_task_done',
-                task_status='done',
-            ),
-        ],
+        indexes,
     )
 
     log.info('initialized database at %r', abspath(db.path))

@@ -21,14 +21,15 @@ class SearchTaskIndex(HashIndex):
         return int(True), None
 
 
-class SearchTaskStatusIndex(HashIndex):
+class SearchTaskStatusNewIndex(HashIndex):
+
+    KIND = 'task'
+    TASK_STATUS = 'new'
 
     def __init__(self, *args, **kwargs):
-        task_status = kwargs.pop('task_status')
-        kwargs['key_format'] = 'I'
-        super(SearchTaskStatusIndex, self).__init__(*args, **kwargs)
 
-        self.task_status = task_status
+        kwargs['key_format'] = 'I'
+        super(SearchTaskStatusNewIndex, self).__init__(*args, **kwargs)
 
     def make_key(self, key):
         return key
@@ -36,11 +37,54 @@ class SearchTaskStatusIndex(HashIndex):
     def make_key_value(self, data):
 
         kind = data.get('kind', None)
-        if kind != 'task':
+        status = data.get('status', None)
+        if kind != self.KIND or status != self.TASK_STATUS:
             return
 
+        return int(True), None
+
+
+class SearchTaskStatusWorkingIndex(HashIndex):
+
+    KIND = 'task'
+    TASK_STATUS = 'working'
+
+    def __init__(self, *args, **kwargs):
+
+        kwargs['key_format'] = 'I'
+        super(SearchTaskStatusWorkingIndex, self).__init__(*args, **kwargs)
+
+    def make_key(self, key):
+        return key
+
+    def make_key_value(self, data):
+
+        kind = data.get('kind', None)
         status = data.get('status', None)
-        if status != self.task_status:
+        if kind != self.KIND or status != self.TASK_STATUS:
+            return
+
+        return int(True), None
+
+
+class SearchTaskStatusDoneIndex(HashIndex):
+
+    KIND = 'task'
+    TASK_STATUS = 'done'
+
+    def __init__(self, *args, **kwargs):
+
+        kwargs['key_format'] = 'I'
+        super(SearchTaskStatusDoneIndex, self).__init__(*args, **kwargs)
+
+    def make_key(self, key):
+        return key
+
+    def make_key_value(self, data):
+
+        kind = data.get('kind', None)
+        status = data.get('status', None)
+        if kind != self.KIND or status != self.TASK_STATUS:
             return
 
         return int(True), None
@@ -49,6 +93,7 @@ class SearchTaskStatusIndex(HashIndex):
 class SearchResultIndex(HashIndex):
 
     def __init__(self, *args, **kwargs):
+
         kwargs['key_format'] = '32s'
         super(SearchResultIndex, self).__init__(*args, **kwargs)
 
