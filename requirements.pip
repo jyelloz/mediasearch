@@ -1,5 +1,6 @@
 setuptools
 nose
+coverage
 Flask
 Flask-Failsafe
 Flask-Script

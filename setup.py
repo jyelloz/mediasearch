@@ -18,9 +18,12 @@ setup(
     ],
     test_suite='mediasearch.testsuite',
     include_package_data=True,
+    setup_requires=[
+        'nose>=1.0',
+        'coverage',
+    ],
     install_requires=[
         'setuptools',
-        'nose',
         'Flask',
         'Flask-Failsafe',
         'Flask-Script',
