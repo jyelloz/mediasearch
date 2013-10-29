@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 from uuid import uuid4
 
@@ -13,6 +15,11 @@ from werkzeug.local import LocalProxy
 
 from .. import database
 
+__all__ = [
+    'build_blueprint',
+    'mediasearch',
+]
+
 
 log = logging.getLogger(__name__)
 
@@ -24,11 +31,6 @@ SITE_TITLE = LocalProxy(
 DATABASE_PATH = LocalProxy(
     lambda: current_app.config['DATABASE']
 )
-
-
-def get_session_searches(session):
-
-    return None
 
 
 def build_blueprint():

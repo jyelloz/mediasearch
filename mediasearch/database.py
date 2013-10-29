@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from logging import getLogger
 
 from CodernityDB.database_thread_safe import ThreadSafeDatabase as Database
