@@ -15,6 +15,7 @@ setup(
     packages=[
         'mediasearch',
         'mediasearch.providers',
+        'mediasearch.web',
     ],
     test_suite='mediasearch.testsuite',
     include_package_data=True,

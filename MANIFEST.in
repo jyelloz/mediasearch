@@ -1,0 +1,2 @@
+recursive-include mediasearch/web/templates *
+recursive-include mediasearch/web/static *
