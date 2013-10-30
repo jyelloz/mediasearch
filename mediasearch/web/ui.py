@@ -65,7 +65,9 @@ def build_blueprint():
     @mediasearch.teardown_request
     def teardown(*args, **kwargs):
 
-        delattr(g, 'api')
+        api = g.get('api', None)
+        if api is not None:
+            del g.api
 
     return mediasearch
 
