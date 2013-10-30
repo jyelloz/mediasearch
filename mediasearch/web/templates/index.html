@@ -10,22 +10,35 @@
 
     <h1>{{ site_title }}</h1>
 
-    <form ng-controller="MediasearchForm">
+    <form ng-controller="MediasearchForm" ng-submit="search()">
       <div>
-        {{ form.search_query(placeholder='Search Terms...', type='search', **{'ng-model': 'form.search_query'}) }}
-        <button type="button" ng-click="search()">Search</button>
+        {{
+          form.search_query(
+            placeholder='Search Terms...',
+            type='search',
+            **{'ng-model': 'form.search_query'}
+          )
+        }}
+        <input type="submit"
+          style="font-size: 125%;"
+          value="Search" />
       </div>
     </form>
 
     {% raw %}
-    <div class="results" ng-controller="MediasearchResultsCtrl">
+    <div class="results"
+         ng-controller="MediasearchResultsCtrl"
+         ng-show="results_visible">
 
-      <div ng-show="waiting()">Waiting for results</div>
+      <h2>Results</h2>
 
-      <h2 ng-show="results_visible()">Results</h2>
+      <p>
+        Found {{ count }} results.
+        <b ng-show="results_done">Done</b>
+      </p>
 
-      <ul ng-show="results_visible()">
-        <li ng-repeat="result in results">
+      <ul>
+        <li ng-repeat="result in items">
           {{ result.title }} <a ng-href="{{ result.url }}">{{ result.source }}</a>
         </li>
       </ul>
@@ -33,9 +46,7 @@
     </div>
     {% endraw %}
 
-    <script src="{{ url_for('static', filename='js/jquery-1.10.2.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/angular.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/mediasearch.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/all.min.js') }}"></script>
 
   </body>
 

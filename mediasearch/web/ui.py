@@ -54,7 +54,7 @@ def build_blueprint():
     def setup():
 
         middleware = (
-            api.delay_middleware(2.5) if current_app.debug
+            api.delay_middleware(0.25) if current_app.debug
             else None
         )
 
@@ -158,12 +158,14 @@ class MediasearchNamespace(FlaskNamespace):
                 continue
 
             try:
-                self.emit('result', item)
+                self.emit('result', item._asdict())
             finally:
                 queue.task_done()
 
         queue.join()
         task_group.join()
+
+        self.emit('done', query)
 
 
 mediasearch = build_blueprint()
