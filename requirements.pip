@@ -4,7 +4,6 @@ coverage
 Flask
 Flask-Failsafe
 Flask-Script
-Flask-WTF
 -e git+https://github.com/surfly/gevent.git@c2ff5f0cd43b85ddf3a11e334d3ef768bada3c0c#egg=gevent-master
 -e git+https://github.com/abourget/gevent-socketio.git@99f96b0b379b87a256e4f9092e513b33bbb2836d#egg=gevent_socketio-master
 requests
