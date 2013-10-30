@@ -1,64 +1,70 @@
 # -*- coding: utf-8 -*-
 
-from CodernityDB import RecordNotFound, DatabaseConflict
+from gevent import spawn, sleep
+from gevent.pool import Group
 
-class API(object):
+from .providers.appleitunes import AppleITunesMovies
+from .providers.googleplay import GooglePlayMovies
 
-    def __init__(self, db):
-
-        self._db = db
-
-    def search(self, query):
-
-        doc = dict(
-            kind='task',
-            status='new',
-            query=query,
-        )
-
-        task = self.db.insert(doc)
-
-        return task
-
-    def poll_task(self):
-
-        doc = next(self.db.all('id'))
-
-        doc['working'] = True
-
-        self.db.insert(doc)
-
-
-    def poll_results(self, task):
-
-        try:
-            doc = self.db.get('id', task['id'])
-
-        except RecordDeleted:
-            return []
-
-        if task['_rev'] == doc['_rev']:
-            return []
-
-
-
+__all__ = [
+    'SearchAPI'
+]
 
 
 class SearchAPI(object):
 
-    def __init__(self, providers, database):
+    DEFAULT_PROVIDERS = (
+        AppleITunesMovies,
+        GooglePlayMovies,
+    )
 
-        self.providers = providers
-        self.database = database
+    def __init__(self, providers=None, middleware=None):
 
-    def search(self, query):
-
-        results = itertools.chain(
-            p.search(query, self.database) for p in self.providers
+        self._providers = (
+            providers if providers is not None
+            else [p() for p in self.DEFAULT_PROVIDERS]
         )
 
-        return list(results)
+        self._middleware = (
+            middleware if middleware is not None
+            else identity_middleware
+        )
 
-    def search_sync(self, query):
+    def search(self, query, queue):
+        """Schedules a search and returns the related task information."""
 
-        return []
+        group = Group()
+
+        for provider in self._providers:
+            group.add(
+                spawn(
+                    self._search_wrapper,
+                    provider,
+                    query,
+                    queue,
+                    self._middleware,
+                )
+            )
+
+        return group
+
+    @staticmethod
+    def _search_wrapper(provider, query, queue, middleware):
+
+        results = provider.search(query, streaming=True)
+
+        for result in middleware(results):
+            queue.put(result)
+
+
+identity_middleware = lambda x: x
+
+
+def delay_middleware(delay_seconds):
+
+    def wrapper(results):
+        for result in results:
+            sleep(delay_seconds)
+            yield result
+
+    return wrapper

@@ -9,6 +9,7 @@ from cssselect import GenericTranslator
 
 from urlparse import urlunsplit, urlsplit
 
+from . import SearchResult
 
 log = logging.getLogger(__name__)
 
@@ -23,8 +24,9 @@ class GooglePlayMovies(object):
     ENDPOINT_PARAMS_DEFAULT = dict(
         c=u'movies',
     )
+    SOURCE = 'Google Play'
 
-    def search(self, query):
+    def search(self, query, streaming=False):
 
         params = dict(
             self.ENDPOINT_PARAMS_DEFAULT,
@@ -39,7 +41,12 @@ class GooglePlayMovies(object):
 
         log.debug('got response, transforming')
 
-        return self.transform_result(text)
+        results = self.transform_result(text)
+
+        return (
+            results if streaming
+            else list(results)
+        )
 
     @classmethod
     def transform_result(cls, text):
@@ -75,7 +82,7 @@ class GooglePlayMovies(object):
             for e in elements
         )
 
-        return [
-            (title, absolutize(path)) for
-            (title, path) in items
-        ]
+        return (
+            SearchResult(title, absolutize(path), cls.SOURCE)
+            for (title, path) in items
+        )

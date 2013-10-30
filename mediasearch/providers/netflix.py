@@ -12,7 +12,7 @@ class NetflixMovies(object):
     ENDPOINT_URL = u'http://api-public.netflix.com/catalog/titles'
     ENDPOINT_PARAMS_DEFAULT = dict()
 
-    def search(self, query):
+    def search(self, query, streaming=False):
 
         raise NotImplementedError()
 

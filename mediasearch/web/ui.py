@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from uuid import uuid4
 
 from flask import (
-    Blueprint,
-    render_template, json,
-    current_app, g,
+    Blueprint, Response,
+    render_template,
+    current_app, g, request,
 )
 from flask.views import MethodView
+
+from gevent.queue import JoinableQueue, Empty
+
+from socketio import socketio_manage
+from socketio.namespace import BaseNamespace
 
 from wtforms import Form, TextField
 from werkzeug.local import LocalProxy
 
-from .. import database
+from .. import api
 
 __all__ = [
     'build_blueprint',
@@ -26,10 +30,6 @@ log = logging.getLogger(__name__)
 
 SITE_TITLE = LocalProxy(
     lambda: current_app.config['SITE_TITLE']
-)
-
-DATABASE_PATH = LocalProxy(
-    lambda: current_app.config['DATABASE']
 )
 
 
@@ -46,35 +46,26 @@ def build_blueprint():
     )
 
     mediasearch.add_url_rule(
-        '/api/search',
-        view_func=SearchView.as_view('search_query'),
+        '/socket.io/<path:path>',
+        view_func=run_socketio,
     )
-
-    mediasearch.add_url_rule(
-        '/api/search/<query_id>',
-        view_func=SearchView.as_view('search_results'),
-    )
-
-    @mediasearch.before_app_first_request
-    def initialize_database():
-
-        database.initialize(DATABASE_PATH)
 
     @mediasearch.before_request
-    def setup_database():
+    def setup():
 
-        g.db = database.connect(DATABASE_PATH)
+        middleware = (
+            api.delay_middleware(2.5) if current_app.debug
+            else None
+        )
+
+        g.api = api.SearchAPI(
+            middleware=middleware,
+        )
 
     @mediasearch.teardown_request
-    def teardown_database(*args, **kwargs):
+    def teardown(*args, **kwargs):
 
-        db = getattr(g, 'db', None)
-        db_close = (
-            None if db is None
-            else db.close
-        )
-        if db_close is not None:
-            db_close()
+        delattr(g, 'api')
 
     return mediasearch
 
@@ -96,52 +87,83 @@ class IndexView(MethodView):
         )
 
 
-class SearchView(MethodView):
+def run_socketio(path):
 
-    def post(self, search_query):
+    real_request = request._get_current_object()
+    app = current_app._get_current_object()
 
-        return json.jsonify(
-            query_id=uuid4().hex,
-        )
-
-    def get(self, query_id):
-
-        return json.jsonify(
-            query_id=query_id,
-            results=[],
-        )
-
-
-def fake_task():
-
-    from gevent import spawn
-    from itertools import chain
-    from ..providers.googleplay import GooglePlayMovies
-    from ..providers.appleitunes import AppleITunesMovies
-
-    google_play = GooglePlayMovies()
-    apple_itunes = AppleITunesMovies()
-
-    google_play_results = spawn(
-        lambda: [
-            dict(title=title, url=url, source='googleplay')
-            for (title, url) in google_play.search('terminator')
-        ]
+    socketio_manage(
+        real_request.environ,
+        {'/search': MediasearchNamespace},
+        request=(real_request, app),
     )
 
-    apple_itunes_results = spawn(
-        lambda: [
-            dict(title=title, url=url, source='itunes')
-            for (title, url) in apple_itunes.search('terminator')
-        ]
-    )
+    return Response()
 
-    results = chain(apple_itunes_results.get(), google_play_results.get())
 
-    for r in results:
-        log.info(repr(r))
+class FlaskNamespace(BaseNamespace):
 
-    print 'done'
+    """Based on http://flask.pocoo.org/snippets/105/
+    Mine seems to actually work, though."""
+
+    def __init__(self, *args, **kwargs):
+
+        # if we pack both real objects inside request
+        # we can use them here
+        (request, app) = kwargs.get('request', None)
+
+        self.ctx = None
+
+        if request:
+            self.ctx = app.request_context(request.environ)
+            self.ctx.push()
+            app.preprocess_request()
+
+            del kwargs['request']
+
+        super(FlaskNamespace, self).__init__(*args, **kwargs)
+
+    def disconnect(self, *args, **kwargs):
+        try:
+            if self.ctx:
+                self.ctx.pop()
+        finally:
+            super(FlaskNamespace, self).disconnect(*args, **kwargs)
+
+
+class MediasearchNamespace(FlaskNamespace):
+
+    def initialize(self):
+
+        log.debug('initialize MediasearchNamespace')
+
+    def on_search(self, query):
+
+        log.debug('search for %r', query)
+
+        queue = JoinableQueue()
+        task_group = g.api.search(query, queue)
+
+        while True:
+            finished = all(
+                [t.ready() for t in task_group]
+            )
+            try:
+                item = queue.get(timeout=1.0)
+            except Empty:
+
+                if finished:
+                    break
+
+                continue
+
+            try:
+                self.emit('result', item)
+            finally:
+                queue.task_done()
+
+        queue.join()
+        task_group.join()
 
 
 mediasearch = build_blueprint()

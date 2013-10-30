@@ -16,6 +16,7 @@ setup(
         'mediasearch',
         'mediasearch.providers',
         'mediasearch.web',
+        'mediasearch.testsuite',
     ],
     test_suite='mediasearch.testsuite',
     include_package_data=True,
@@ -27,6 +28,7 @@ setup(
     setup_requires=[
         'nose>=1.0',
         'coverage',
+        'wheel',
     ],
     install_requires=[
         'setuptools',
@@ -34,8 +36,8 @@ setup(
         'Flask-Failsafe',
         'Flask-Script',
         'Flask-WTF',
-        'CodernityDB',
         'gevent>=1.0dev',
+        'gevent-socketio',
         'requests',
         'lxml',
         'cssselect',

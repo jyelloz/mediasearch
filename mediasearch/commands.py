@@ -61,8 +61,8 @@ class GeventServer(Command):
         use_reloader = kwargs['use_reloader']
 
         application = (
-            DebuggedApplication(app.wsgi_app, True) if use_debugger
-            else app.wsgi_app
+            DebuggedApplication(app, True) if use_debugger
+            else app
         )
 
         server = WSGIServer(
@@ -73,6 +73,41 @@ class GeventServer(Command):
         f = (
             partial(run_with_reloader, server) if use_reloader
             else server
+        )
+
+        f()
+
+
+class SocketIOServer(GeventServer):
+
+    def handle(self, app, host, port, **kwargs):
+
+        from functools import partial
+        from socketio.server import SocketIOServer as WSGIServer
+        from werkzeug.serving import run_with_reloader
+        from werkzeug.debug import DebuggedApplication
+        # from werkzeug.wsgi import SharedDataMiddleware
+
+        use_debugger = False and kwargs['use_debugger']
+        use_reloader = kwargs['use_reloader']
+
+        application = (
+            DebuggedApplication(app, evalex=True) if use_debugger
+            else app
+        )
+
+        global server
+        server = WSGIServer(
+            (host, port),
+            application,
+            resource='socket.io',
+            policy_server=False,
+            # policy_listener=(host, port + 10000),
+        )
+
+        f = (
+            partial(run_with_reloader, server.serve_forever) if use_reloader
+            else server.serve_forever
         )
 
         f()

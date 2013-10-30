@@ -12,7 +12,7 @@ def main():
     from flask.ext.script import Manager
 
     from .web import create
-    from .commands import GeventServer
+    from .commands import GeventServer, SocketIOServer
 
     logging.basicConfig(level=logging.DEBUG)
     logging.captureWarnings(True)
@@ -22,7 +22,6 @@ def main():
         DEBUG = True
         SITE_TITLE = 'Mediasearch'
         SECRET_KEY = 'secret'
-        DATABASE = 'database'
 
     configured_create = partial(
         create,
@@ -31,6 +30,7 @@ def main():
 
     manager = Manager(configured_create)
     manager.add_command('rungeventserver', GeventServer())
+    manager.add_command('runsocketioserver', SocketIOServer())
     manager.run()
 
 

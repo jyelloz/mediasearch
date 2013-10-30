@@ -7,6 +7,7 @@ Flask-Script
 Flask-WTF
 CodernityDB
 -e git+https://github.com/surfly/gevent.git@c2ff5f0cd43b85ddf3a11e334d3ef768bada3c0c#egg=gevent-master
+gevent-socketio
 requests
 lxml
 cssselect

@@ -4,6 +4,8 @@ import logging
 
 import requests
 
+from . import SearchResult
+
 
 log = logging.getLogger(__name__)
 
@@ -15,8 +17,9 @@ class AppleITunesMovies(object):
     ENDPOINT_PARAMS_DEFAULT = dict(
         media=u'movie',
     )
+    SOURCE = 'iTunes'
 
-    def search(self, query):
+    def search(self, query, streaming=False):
 
         params = dict(
             self.ENDPOINT_PARAMS_DEFAULT,
@@ -30,7 +33,12 @@ class AppleITunesMovies(object):
 
         log.debug('got response, transforming')
 
-        return self.transform_result(json_data)
+        results = self.transform_result(json_data)
+
+        return (
+            results if streaming
+            else list(results)
+        )
 
     @classmethod
     def transform_result(cls, json_data):
@@ -39,7 +47,7 @@ class AppleITunesMovies(object):
 
         log.debug('found %r items in results', len(results))
 
-        return [
-            (r['trackName'], r['trackViewUrl'])
+        return (
+            SearchResult(r['trackName'], r['trackViewUrl'], cls.SOURCE)
             for r in results
-        ]
+        )

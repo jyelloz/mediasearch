@@ -102,7 +102,11 @@ class ProvidersTestcase(TestCase):
 
         provider = NetflixMovies()
 
-        result = provider.search(self.QUERY)
-
         # not implemented yet
-        self.assertEqual(len(result), -1)
+        with self.assertRaises(NotImplementedError):
+            result = provider.search(self.QUERY)
+            self.assertEqual(len(result), -1)
+
+        with self.assertRaises(NotImplementedError):
+            result = provider.transform_result([])
+            self.assertEqual(len(result), -1)

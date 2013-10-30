@@ -5,3 +5,6 @@
 /cover
 /*.egg-info
 /nosetests.*
+/.coverage
+/bower_components
+/node_components
